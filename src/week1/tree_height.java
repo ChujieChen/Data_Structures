@@ -55,6 +55,7 @@ public class tree_height {
 			// construct a general tree O(n) then count height from root to leaf O(n)
 			// construct a tree: we can use nested arrays, index for node, inner array for children nodes
 			ArrayList<Integer>[] nodes = new ArrayList[n];
+			// have to initialize inner ArrayList
 			for(int i=0; i<nodes.length; i++) {
 				nodes[i] = new ArrayList<>(); 
 			}
@@ -115,11 +116,20 @@ public class tree_height {
 //		long endTime   = System.nanoTime();
 //        long totalTime = endTime - startTime;
 //        System.out.println("runtime:" + totalTime);
-        
-        long startTime = System.nanoTime();
+		long startTime = System.nanoTime();
 		System.out.println(tree.computeHeightFast());
+		
 		long endTime   = System.nanoTime();
 		long totalTime = endTime - startTime;
-        System.out.println("runtime:" + totalTime);
+        System.out.println("Runtime: " + totalTime + " ns");
+        
+		Runtime runtime = Runtime.getRuntime();
+		long usedMemory = (long) (runtime.totalMemory()-runtime.freeMemory())/(1024*1024);
+		if(usedMemory < 2.5) {
+			System.out.println("Memory usage < 2.5 MB");
+		}
+		else {
+			System.out.println("Memory usage: " + usedMemory + " MB");
+		}
 	}
 }
