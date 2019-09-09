@@ -63,6 +63,12 @@ public class StackWithMax {
             } else if ("pop".equals(operation)) {
                 stack.pop();
                 maxStack.pop();
+                if(maxStack.isEmpty()) {
+                	maxForAllPrevious = Integer.MIN_VALUE;
+                }
+                else {
+                	maxForAllPrevious = maxStack.lastElement();
+                }
             } else if ("max".equals(operation)) {
                 System.out.println(maxStack.lastElement());
             }

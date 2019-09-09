@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.sun.accessibility.internal.resources.accessibility;
 import com.sun.org.apache.xalan.internal.xsltc.dom.SAXImpl.NamespaceWildcardIterator;
+import com.sun.org.apache.xerces.internal.util.EntityResolver2Wrapper;
 
 import java.io.*;
 
@@ -75,12 +76,11 @@ public class SlidingWindowMax {
 			ans[0] = window.getMax();
 			
 			// following windows
-			for(int i = 1; i + m < n; i++) {
-				window.add(sequence[i+m]);
+			for(int i = 1; i + m - 1 < n; i++) {
+				window.add(sequence[i+m-1]);
 				window.remove();
 				ans[i] = window.getMax(); 
 			}
-			
 			return ans;
 		}
 		class QueueWithTwoStacks<E>{
@@ -100,6 +100,9 @@ public class SlidingWindowMax {
 			}
 			public int getMax() {
 				return Math.max((int)inbox.getMax(), (int)outbox.getMax());
+				// just for debugging
+//				return Math.max((int)inbox.getMax(), 0);
+//				return Math.max(0, (int)outbox.getMax());
 			}
 			
 			/**
@@ -129,9 +132,23 @@ public class SlidingWindowMax {
 				}
 				public E pop() {
 					stackForMax.pop();
+					/**
+					 * This is very important
+					 */
+					// important
+					// max will store the last max even if the stack is empty now
+					if(stackForMax.isEmpty()) {
+						max = Integer.MIN_VALUE;
+					}
+					else {
+						max = (int)stackForMax.lastElement();
+					}
 					return stackForValues.pop();
 				}
 				public int getMax() {
+//					for(int i =0; i<stackForMax.size();i++) {
+//						System.out.print(stackForMax.elementAt(i) + " ");
+//					}
 					if(stackForMax.isEmpty()) {
 						return Integer.MIN_VALUE;
 					}
@@ -141,53 +158,71 @@ public class SlidingWindowMax {
 					return stackForValues.isEmpty();
 				}
 			}
+			public void testStackWithMax() {
+				/**
+				 * test StackWithMax
+				 */
+				
+				StackWithMax stackWithMax = new StackWithMax<Integer>();
+				stackWithMax.push(1);
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.push(2);
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.push(3);
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.push(10);
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.pop();
+				stackWithMax.push(4);
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.pop();
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.pop();
+				System.out.println(stackWithMax.getMax());
+				stackWithMax.pop();
+				System.out.println(stackWithMax.getMax());
+				
+			}
 		}
-		
-		
-		public void main(String[] args) {
-			/**
-			 * test StackWithMax
-			 */
-			/*
-			StackWithMax stackWithMax = new StackWithMax<>();
-			stackWithMax.push(1);
-			System.out.println(stackWithMax.getMax());
-			stackWithMax.push(2);
-			System.out.println(stackWithMax.getMax());
-			stackWithMax.push(3);
-			System.out.println(stackWithMax.getMax());
-			stackWithMax.push(4);
-			System.out.println(stackWithMax.getMax());
-			stackWithMax.pop();
-			System.out.println(stackWithMax.getMax());
-			System.out.println(stackWithMax.isEmtpy());
-			stackWithMax.pop();
-			System.out.println(stackWithMax.getMax());
-			System.out.println(stackWithMax.isEmtpy());
-			stackWithMax.pop();
-			System.out.println(stackWithMax.getMax());
-			System.out.println(stackWithMax.isEmtpy());
-			stackWithMax.pop();
-//			System.out.println(stackWithMax.getMax());
-			System.out.println(stackWithMax.isEmtpy());
-//			stackWithMax.pop();
-//			System.out.println(stackWithMax.getMax());
-			System.out.println(stackWithMax.isEmtpy());
-			*/
-			/**
-			 * test QueueWithTwoStacks
-			 */
-			/*
+		/**
+		 * test StackWithMax
+		 */
+		public void testStackWithMax() {
 			QueueWithTwoStacks<Integer> queueWithTwoStacks = new QueueWithTwoStacks<>();
+			queueWithTwoStacks.testStackWithMax();
+		}
+		/**
+		 * test QueueWithTwoStacks
+		 */
+		public void testQueueWithTwoStacks() {
+			QueueWithTwoStacks<Integer> queueWithTwoStacks = new QueueWithTwoStacks<>();
+			queueWithTwoStacks.add(2);
+			queueWithTwoStacks.add(7);
 			queueWithTwoStacks.add(3);
+			queueWithTwoStacks.add(1);
+			System.out.println(queueWithTwoStacks.getMax());
+			queueWithTwoStacks.remove();
+			queueWithTwoStacks.add(5);
+			System.out.println(queueWithTwoStacks.getMax());
+			queueWithTwoStacks.remove();
 			queueWithTwoStacks.add(2);
 			System.out.println(queueWithTwoStacks.getMax());
 			queueWithTwoStacks.remove();
+			queueWithTwoStacks.add(6);
 			System.out.println(queueWithTwoStacks.getMax());
-			queueWithTwoStacks.add(4);
+			queueWithTwoStacks.remove();
+			queueWithTwoStacks.add(2);
 			System.out.println(queueWithTwoStacks.getMax());
-			*/
 		}
+		
+//		public void main(String[] args) {
+//			
+//			
+//			
+//			QueueWithTwoStacks<Integer> queueWithTwoStacks = new QueueWithTwoStacks<>();
+
+//			
+//		}
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -203,7 +238,7 @@ public class SlidingWindowMax {
 	public void run() throws IOException {
 		SlidingWindow sWindow = new SlidingWindow();
 		sWindow.read();
-		int[] ans = sWindow.getMaxSequence();
+		int[] ans = sWindow.getMaxSequenceWithStackWithMax();
 		for(int i = 0; i < ans.length; i++) {
 			System.out.print(ans[i] + " ");
 		}
@@ -211,9 +246,10 @@ public class SlidingWindowMax {
 		/**
 		 * test StackWithMax, QueueWithTwoStacks
 		 */
-		/*
-		sWindow.main(null);
-		*/ 
+//		sWindow.testStackWithMax();
+//		sWindow.testQueueWithTwoStacks();
+//		sWindow.main(null);
+		
 		
 	}
 }
