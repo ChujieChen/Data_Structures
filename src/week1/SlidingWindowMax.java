@@ -6,7 +6,10 @@ import com.sun.accessibility.internal.resources.accessibility;
 import com.sun.org.apache.xalan.internal.xsltc.dom.SAXImpl.NamespaceWildcardIterator;
 import com.sun.org.apache.xerces.internal.util.EntityResolver2Wrapper;
 
+import jdk.nashorn.internal.ir.BlockStatement;
+
 import java.io.*;
+import java.nio.channels.SeekableByteChannel;
 
 public class SlidingWindowMax {
 	class FastScanner {
@@ -215,14 +218,86 @@ public class SlidingWindowMax {
 			System.out.println(queueWithTwoStacks.getMax());
 		}
 		
-//		public void main(String[] args) {
-//			
-//			
-//			
-//			QueueWithTwoStacks<Integer> queueWithTwoStacks = new QueueWithTwoStacks<>();
-
-//			
-//		}
+		/**
+		 * Based on hint2
+		 * This is hard to understand!
+		 * https://stackoverflow.com/questions/56720446/finding-second-largest-element-in-sliding-window?noredirect=1&lq=1
+		 * https://www.coursera.org/learn/data-structures/discussions/weeks/1/threads/RxcNj59KEemuvw73k0cMAg/replies/XUklbcCMEempqw45cwE0nA/comments/t4stNMHfEemX3Q5u3dtUcA
+		 * a b c d | e f g h
+		 * for block [a b c d], it has
+		 * [d],[c d], [b c d], [a b c d] as prefixes
+		 * [a], [a b], [a b c], [a b c d] as suffixes
+		 * for example, for window [b c d e] = [b c d] + [e]
+		 * then max = max(max(b c d), max(e))
+		 * From head to tail -> max among suffixes
+		 * From tail to head -> max among prefixes
+		 */
+		int[] getMaxSequenceFromPreprocess() {
+			int blockNumber = (n % m == 0 ? n / m: n / m + 1);
+			int[] fillSequence = new int[blockNumber * m];
+			for(int i=0; i < fillSequence.length; i++) {
+				fillSequence[i] = (i < sequence.length ? sequence[i]: Integer.MIN_VALUE); 
+			}
+			int[] blockRightEdges = new int[blockNumber];
+			// put right edges of blocks into `blockRightEdges`
+			for(int i = 0; i < blockNumber; i++) {
+				blockRightEdges[i]= (i + 1) * m - 1; 
+			}
+			// from head to tail, suffixes
+			int i = 0;
+			int blockIdx = 0;
+			int currMax = Integer.MIN_VALUE;
+			HashMap<Integer, Integer> maxInSuffixes = new HashMap<>();
+			while(i < n) {
+				if(fillSequence[i] > currMax) {
+					currMax = fillSequence[i];
+				}
+				maxInSuffixes.put(i, currMax);
+				i++;
+				if(i > blockRightEdges[blockIdx]) {
+					currMax = Integer.MIN_VALUE;
+					blockIdx++;
+				}
+			}
+			// similarly, we can get prefixes from tail to head
+			int[] blockLeftEdges = new int[blockNumber];
+			// put left edges of blocks into `blockLeftEdges`
+			for(i = 0; i < blockNumber; i++) {
+				blockLeftEdges[i]= i * m; 
+			}
+			i = n - 1;
+			blockIdx = blockNumber - 1;
+			currMax = Integer.MIN_VALUE;
+			HashMap<Integer, Integer> maxInPreffixes = new HashMap<>();
+			while(i >= 0) {
+				if(fillSequence[i] > currMax) {
+					currMax = fillSequence[i];
+				}
+				maxInPreffixes.put(i, currMax);
+				i--;
+				if(i < blockLeftEdges[blockIdx]) {
+					currMax = Integer.MIN_VALUE;
+					blockIdx--;
+				}
+			}
+			// Slide the window
+			int[] ans = new int[n - m + 1];
+			for(i = 0; i < n - m + 1; i++) {
+				int start = i;
+				int end = i + m - 1;
+				ans[i] = Math.max(maxInPreffixes.get(start), maxInSuffixes.get(end)); 
+			}
+			return ans;
+		}
+		
+		/**
+		 * Based on hint3
+		 * Dequeue
+		 */
+		int[] getMaxSequenceWithDeque() {
+			int[] ans = new int[n - m + 1];
+			return ans;
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -238,7 +313,24 @@ public class SlidingWindowMax {
 	public void run() throws IOException {
 		SlidingWindow sWindow = new SlidingWindow();
 		sWindow.read();
-		int[] ans = sWindow.getMaxSequenceWithStackWithMax();
+		
+		long startTime = System.nanoTime();
+		
+//		int[] ans = sWindow.getMaxSequenceWithStackWithMax();
+		int[] ans = sWindow.getMaxSequenceFromPreprocess();
+		
+		long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        System.out.println("Runtime: " + totalTime/(1e6) + " ms");
+        Runtime runtime = Runtime.getRuntime();
+		long usedMemory = (long) (runtime.totalMemory()-runtime.freeMemory())/(1024*1024);
+		if(usedMemory < 2.5) {
+			System.out.println("Memory usage < 2.5 MB");
+		}
+		else {
+			System.out.println("Memory usage: " + usedMemory + " MB");
+		}
+		
 		for(int i = 0; i < ans.length; i++) {
 			System.out.print(ans[i] + " ");
 		}
