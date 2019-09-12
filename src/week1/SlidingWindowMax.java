@@ -1,15 +1,7 @@
 package week1;
 
 import java.util.*;
-
-import com.sun.accessibility.internal.resources.accessibility;
-import com.sun.org.apache.xalan.internal.xsltc.dom.SAXImpl.NamespaceWildcardIterator;
-import com.sun.org.apache.xerces.internal.util.EntityResolver2Wrapper;
-
-import jdk.nashorn.internal.ir.BlockStatement;
-
 import java.io.*;
-import java.nio.channels.SeekableByteChannel;
 
 public class SlidingWindowMax {
 	class FastScanner {
@@ -293,9 +285,34 @@ public class SlidingWindowMax {
 		/**
 		 * Based on hint3
 		 * Dequeue
+		 * https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/
+		 * make a decreasing order deque containing index of those decreasing values
+		 * make sure:
+		 * deque stores indexes
+		 * ans stores values
 		 */
 		int[] getMaxSequenceWithDeque() {
 			int[] ans = new int[n - m + 1];
+			Deque<Integer> deque = new LinkedList<Integer>();
+			for(int i = 0; i < m; i++) {
+				while(!deque.isEmpty() && sequence[i] > sequence[deque.peekLast()]) {
+					deque.removeLast();
+				}
+				deque.add(i);
+			}
+			ans[0] = sequence[deque.peek()];
+			for(int i = m; i < n; i++) {
+				// update window starts
+				while(!deque.isEmpty() && deque.peek() <= i - m) {
+					deque.removeFirst();
+				}
+				// examine the new element
+				while(!deque.isEmpty() && sequence[i] > sequence[deque.peekLast()]){
+					deque.removeLast();
+				}
+				deque.add(i);
+				ans[i - m + 1] = sequence[deque.peek()];
+			}
 			return ans;
 		}
 	}
@@ -317,7 +334,8 @@ public class SlidingWindowMax {
 		long startTime = System.nanoTime();
 		
 //		int[] ans = sWindow.getMaxSequenceWithStackWithMax();
-		int[] ans = sWindow.getMaxSequenceFromPreprocess();
+//		int[] ans = sWindow.getMaxSequenceFromPreprocess();
+		int[] ans = sWindow.getMaxSequenceWithDeque();
 		
 		long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
