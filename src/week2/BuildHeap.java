@@ -89,7 +89,19 @@ public class BuildHeap {
         in = new FastScanner();
         out = new PrintWriter(new BufferedOutputStream(System.out));
         readData();
+        long startTime = System.nanoTime();
         generateSwaps();
+        long endTime   = System.nanoTime();
+		long totalTime = endTime - startTime;
+        System.out.println("Runtime: " + totalTime + " ns");
+        Runtime runtime = Runtime.getRuntime();
+		long usedMemory = (long) (runtime.totalMemory()-runtime.freeMemory())/(1024*1024);
+		if(usedMemory < 2.5) {
+			System.out.println("Memory usage < 2.5 MB");
+		}
+		else {
+			System.out.println("Memory usage: " + usedMemory + " MB");
+		}
         writeResponse();
         out.close();
     }
