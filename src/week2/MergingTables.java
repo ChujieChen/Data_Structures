@@ -64,7 +64,7 @@ public class MergingTables {
         // LCC: no matter how they merge, once they are merged, they have same numberOfRows
         if(realDestination.rank > realSource.rank) {
         	realDestination.numberOfRows = realDestination.numberOfRows + realSource.numberOfRows;
-        	realSource.numberOfRows = realDestination.numberOfRows;
+//        	realSource.numberOfRows = realDestination.numberOfRows;
         	if(realDestination.numberOfRows > maximumNumberOfRows) {
         		maximumNumberOfRows = realDestination.numberOfRows;
         	}
@@ -72,6 +72,7 @@ public class MergingTables {
         	
         }
         else {
+        	// originally we only want to update realSource, but practically we need to updaterealDestination as well for this problem
         	realDestination.numberOfRows = realDestination.numberOfRows + realSource.numberOfRows;
         	realSource.numberOfRows = realDestination.numberOfRows;
         	if(realDestination.numberOfRows > maximumNumberOfRows) {
