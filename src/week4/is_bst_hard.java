@@ -48,8 +48,24 @@ public class is_bst_hard {
         }
 
         boolean isBinarySearchTree() {
-          // Implement correct algorithm here
-          return true;
+        	// Implement correct algorithm here
+        	// TODO:
+        	// still leetcode 98, but has to use solution 1
+        	if(tree.length <= 0) return true;
+        	return helper(0, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        }
+        boolean helper(int index, int min, int max) {
+        	if(index == -1) return true;
+        	// check current node isIn range[min, max)
+        	int currVal = tree[index].key;
+        	// for sample 6
+        	if(currVal != Integer.MAX_VALUE) {
+        		if(currVal < min || currVal >= max) return false;
+        	}
+        	// update range and pass it to subtrees
+        	if(! helper(tree[index].left, min, currVal)) return false;
+        	if(! helper(tree[index].right, currVal, max)) return false;
+        	return true;
         }
     }
 
@@ -66,7 +82,7 @@ public class is_bst_hard {
     public void run() throws IOException {
         IsBST tree = new IsBST();
         tree.read();
-        if (tree.solve()) {
+        if (tree.isBinarySearchTree()) {
             System.out.println("CORRECT");
         } else {
             System.out.println("INCORRECT");
